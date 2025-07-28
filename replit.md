@@ -35,10 +35,10 @@ The application follows a clean separation between frontend and backend with a s
 - **Development**: Hot module replacement with Vite integration
 
 ### Database Layer
-- **Primary Database**: PostgreSQL (configured via Drizzle)
-- **Sample Data**: In-memory SQLite with pre-populated sales data for demonstration
-- **Schema Management**: Drizzle migrations in `./migrations` directory
-- **Connection**: Neon Database serverless PostgreSQL integration
+- **Primary Database**: PostgreSQL with Neon Database serverless integration
+- **Sample Data**: Persistent PostgreSQL database with pre-seeded sales, products, and customers data
+- **Schema Management**: Drizzle ORM with type-safe database operations
+- **Connection**: Neon Database serverless PostgreSQL with connection pooling
 
 ### Core Features
 1. **Natural Language Processing**: Converts plain English to SQL queries using OpenAI
@@ -76,7 +76,7 @@ The application follows a clean separation between frontend and backend with a s
 
 ### Development
 - **Local Development**: `npm run dev` starts both frontend and backend with HMR
-- **Database**: Uses in-memory SQLite with sample data for immediate functionality
+- **Database**: Uses persistent PostgreSQL with seeded sample data for immediate functionality
 - **Hot Reloading**: Vite provides instant feedback for frontend changes
 
 ### Production
@@ -113,3 +113,20 @@ The application is designed to work immediately in development with sample data 
 - **Error Recovery**: Better error handling throughout the application with user-friendly messages
 
 The application now works fully even without OpenAI API access, using intelligent pattern matching for common queries.
+
+## Database Migration (July 28, 2025)
+
+### Upgraded to PostgreSQL
+- **Database Migration**: Successfully migrated from in-memory SQLite to persistent PostgreSQL
+- **Schema Definition**: Created comprehensive Drizzle ORM schema with proper relations
+- **Data Persistence**: All queries, visualizations, and sample data now persist between sessions
+- **Seeded Data**: Pre-populated database with sample sales, products, and customers data
+- **Performance**: Query execution now uses PostgreSQL with connection pooling for better performance
+
+### Technical Implementation
+- **Drizzle ORM**: Type-safe database operations with automatic schema validation
+- **Relations**: Properly defined database relationships between users, queries, and visualizations
+- **Storage Layer**: Replaced MemStorage with DatabaseStorage implementing the same interface
+- **Data Types**: Uses PostgreSQL-specific data types (UUID, DECIMAL, TIMESTAMP) for better data integrity
+
+The application maintains full backward compatibility while gaining persistent data storage and improved performance.

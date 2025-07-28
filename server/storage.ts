@@ -1,5 +1,7 @@
 import { type Query, type InsertQuery, type Visualization, type InsertVisualization, type DatabaseConnection } from "@shared/schema";
-import { randomUUID } from "crypto";
+import { db } from "./db";
+import { queries, visualizations } from "@shared/schema";
+import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
   // Query operations
@@ -22,98 +24,109 @@ export interface IStorage {
   updateDatabaseConnection(connection: DatabaseConnection): Promise<void>;
 }
 
-export class MemStorage implements IStorage {
-  private queries: Map<string, Query>;
-  private visualizations: Map<string, Visualization>;
-  private databaseConnection: DatabaseConnection | undefined;
-
-  constructor() {
-    this.queries = new Map();
-    this.visualizations = new Map();
-    
-    // Initialize with sample database connection
-    this.databaseConnection = {
-      id: randomUUID(),
-      name: "sample_sales_data.db",
-      type: "sqlite",
-      connectionString: ":memory:",
-      isActive: true,
-    };
-  }
-
+export class DatabaseStorage implements IStorage {
   async createQuery(insertQuery: InsertQuery): Promise<Query> {
-    const id = randomUUID();
-    const query: Query = {
-      ...insertQuery,
-      id,
-      sqlQuery: insertQuery.sqlQuery || "",
-      createdAt: new Date(),
-      isSaved: false,
-    };
-    this.queries.set(id, query);
+    const [query] = await db
+      .insert(queries)
+      .values({
+        ...insertQuery,
+        sqlQuery: insertQuery.sqlQuery || "",
+      })
+      .returning();
     return query;
   }
 
   async getQuery(id: string): Promise<Query | undefined> {
-    return this.queries.get(id);
+    const [query] = await db
+      .select()
+      .from(queries)
+      .where(eq(queries.id, id));
+    return query || undefined;
   }
 
   async getAllQueries(): Promise<Query[]> {
-    return Array.from(this.queries.values()).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    return await db
+      .select()
+      .from(queries)
+      .orderBy(desc(queries.createdAt));
   }
 
   async updateQuery(id: string, updates: Partial<Query>): Promise<Query | undefined> {
-    const existing = this.queries.get(id);
-    if (!existing) return undefined;
-    
-    const updated = { ...existing, ...updates };
-    this.queries.set(id, updated);
-    return updated;
+    const [query] = await db
+      .update(queries)
+      .set(updates)
+      .where(eq(queries.id, id))
+      .returning();
+    return query || undefined;
   }
 
   async deleteQuery(id: string): Promise<boolean> {
-    return this.queries.delete(id);
+    const result = await db
+      .delete(queries)
+      .where(eq(queries.id, id));
+    return result.rowCount > 0;
   }
 
   async getSavedQueries(): Promise<Query[]> {
-    return Array.from(this.queries.values()).filter(q => q.isSaved);
+    return await db
+      .select()
+      .from(queries)
+      .where(eq(queries.isSaved, true))
+      .orderBy(desc(queries.createdAt));
   }
 
   async createVisualization(insertViz: InsertVisualization): Promise<Visualization> {
-    const id = randomUUID();
-    const visualization: Visualization = {
-      ...insertViz,
-      id,
-      shareableId: randomUUID(),
-      createdAt: new Date(),
-    };
-    this.visualizations.set(id, visualization);
+    const [visualization] = await db
+      .insert(visualizations)
+      .values(insertViz)
+      .returning();
     return visualization;
   }
 
   async getVisualization(id: string): Promise<Visualization | undefined> {
-    return this.visualizations.get(id);
+    const [visualization] = await db
+      .select()
+      .from(visualizations)
+      .where(eq(visualizations.id, id));
+    return visualization || undefined;
   }
 
   async getVisualizationsByQuery(queryId: string): Promise<Visualization[]> {
-    return Array.from(this.visualizations.values()).filter(v => v.queryId === queryId);
+    return await db
+      .select()
+      .from(visualizations)
+      .where(eq(visualizations.queryId, queryId));
   }
 
   async getVisualizationByShareableId(shareableId: string): Promise<Visualization | undefined> {
-    return Array.from(this.visualizations.values()).find(v => v.shareableId === shareableId);
+    const [visualization] = await db
+      .select()
+      .from(visualizations)
+      .where(eq(visualizations.shareableId, shareableId));
+    return visualization || undefined;
   }
 
   async deleteVisualization(id: string): Promise<boolean> {
-    return this.visualizations.delete(id);
+    const result = await db
+      .delete(visualizations)
+      .where(eq(visualizations.id, id));
+    return result.rowCount > 0;
   }
 
   async getActiveDatabaseConnection(): Promise<DatabaseConnection | undefined> {
-    return this.databaseConnection;
+    return {
+      id: "postgresql-main",
+      name: "PostgreSQL Database",
+      type: "postgresql",
+      connectionString: process.env.DATABASE_URL || "",
+      isActive: true,
+    };
   }
 
   async updateDatabaseConnection(connection: DatabaseConnection): Promise<void> {
-    this.databaseConnection = connection;
+    // For now, database connection updates are not supported
+    console.log("Database connection update requested:", connection.name);
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

@@ -70,7 +70,7 @@ export function Sidebar({ onNewQuery, onLoadQuery }: SidebarProps) {
       <div className="p-4 bg-green-50 border-b border-gray-200">
         <div className="flex items-center space-x-2">
           <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-          <span className="text-sm font-medium text-green-800">Connected to SQLite</span>
+          <span className="text-sm font-medium text-green-800">Connected to PostgreSQL</span>
         </div>
         <p className="text-xs text-gray-600 mt-1">
           {dbConnection?.name || "sample_sales_data.db"}
@@ -79,7 +79,7 @@ export function Sidebar({ onNewQuery, onLoadQuery }: SidebarProps) {
           variant="ghost" 
           size="sm" 
           className="mt-2 h-auto p-0 text-xs text-primary hover:text-primary/80"
-          onClick={() => alert("Database connection management coming soon. Currently using sample SQLite database.")}
+          onClick={() => alert("Database connection management coming soon. Currently using PostgreSQL database with persistent storage.")}
         >
           <ArrowLeftRight className="h-3 w-3 mr-1" />
           Change Database
