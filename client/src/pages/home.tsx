@@ -34,13 +34,14 @@ export default function Home() {
     setSqlQuery(query.sqlQuery);
     setCurrentQueryId(query.id);
     if (query.results) {
+      const results = typeof query.results === 'string' ? JSON.parse(query.results) : query.results;
       setQueryResult({
         success: true,
-        data: query.results,
-        columns: query.results.length > 0 ? Object.keys(query.results[0]) : [],
-        rowCount: query.results.length,
+        data: results,
+        columns: Array.isArray(results) && results.length > 0 ? Object.keys(results[0]) : [],
+        rowCount: Array.isArray(results) ? results.length : 0,
       });
-      setChartData(query.results);
+      setChartData(Array.isArray(results) ? results : []);
     }
   };
 

@@ -158,7 +158,7 @@ export function DataTable({ result, onVisualizationRequest }: DataTableProps) {
               </div>
             </CardHeader>
             <CardContent>
-              {result.data && result.data.length > 0 ? (
+              {result.data && Array.isArray(result.data) && result.data.length > 0 ? (
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
@@ -171,7 +171,7 @@ export function DataTable({ result, onVisualizationRequest }: DataTableProps) {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {result.data.map((row, index) => (
+                      {Array.isArray(result.data) && result.data.map((row, index) => (
                         <TableRow key={index} className="hover:bg-gray-50">
                           {result.columns?.map((column) => (
                             <TableCell key={column} className="font-mono text-sm">
@@ -198,11 +198,63 @@ export function DataTable({ result, onVisualizationRequest }: DataTableProps) {
         <TabsContent value="visualization" className="flex-1 p-6 bg-gray-50 mt-0">
           <Card>
             <CardContent className="pt-6">
-              <div className="text-center py-8">
-                <BarChart3 className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Visualization Coming Soon</h3>
-                <p className="text-gray-500">Use the chart builder panel to create visualizations</p>
-              </div>
+              {result.data && Array.isArray(result.data) && result.data.length > 0 ? (
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Quick Visualization</h3>
+                    <p className="text-sm text-gray-500 mb-4">
+                      Auto-generated chart from your query results
+                    </p>
+                  </div>
+                  
+                  {/* Simple data visualization */}
+                  <div className="bg-white p-4 rounded-lg border">
+                    <div className="space-y-2">
+                      {result.data.slice(0, 10).map((row, index) => {
+                        const keys = Object.keys(row);
+                        const firstCol = keys[0];
+                        const secondCol = keys[1];
+                        const value = row[secondCol];
+                        const numValue = typeof value === 'string' ? parseFloat(value) || 0 : Number(value) || 0;
+                        const maxValue = Math.max(...(result.data || []).map(r => {
+                          const v = r[secondCol];
+                          return typeof v === 'string' ? parseFloat(v) || 0 : Number(v) || 0;
+                        }));
+                        const percentage = maxValue > 0 ? (numValue / maxValue) * 100 : 0;
+                        
+                        return (
+                          <div key={index} className="flex items-center space-x-3">
+                            <div className="w-24 text-sm text-gray-600 truncate">
+                              {String(row[firstCol])}
+                            </div>
+                            <div className="flex-1 bg-gray-200 rounded-full h-4 relative">
+                              <div 
+                                className="bg-primary h-4 rounded-full transition-all duration-500"
+                                style={{ width: `${percentage}%` }}
+                              ></div>
+                            </div>
+                            <div className="w-20 text-sm font-mono text-right">
+                              {numValue.toLocaleString()}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  
+                  <div className="text-center">
+                    <p className="text-xs text-gray-500">
+                      For advanced charts, use the Chart Builder panel →
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <BarChart3 className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Data to Visualize</h3>
+                  <p className="text-gray-500">Run a query first to see visualizations</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -210,11 +262,97 @@ export function DataTable({ result, onVisualizationRequest }: DataTableProps) {
         <TabsContent value="insights" className="flex-1 p-6 bg-gray-50 mt-0">
           <Card>
             <CardContent className="pt-6">
-              <div className="text-center py-8">
-                <Lightbulb className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">AI Insights Coming Soon</h3>
-                <p className="text-gray-500">Get automated insights about your data</p>
-              </div>
+              {result.data && Array.isArray(result.data) && result.data.length > 0 ? (
+                <div className="space-y-4">
+                  <div className="text-center mb-6">
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Data Insights</h3>
+                    <p className="text-sm text-gray-500">
+                      Automatic analysis of your query results
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    {/* Row count insight */}
+                    <div className="bg-white p-4 rounded-lg border">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <span className="text-sm font-medium">Dataset Size</span>
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        Your query returned <strong>{result.data.length} rows</strong> with <strong>{result.columns?.length || 0} columns</strong>
+                      </p>
+                    </div>
+                    
+                    {/* Column analysis */}
+                    {result.columns && result.columns.length > 0 && (
+                      <div className="bg-white p-4 rounded-lg border">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <span className="text-sm font-medium">Column Analysis</span>
+                        </div>
+                        <div className="space-y-1">
+                          {result.columns.map((column, index) => {
+                            const sampleValue = result.data?.[0]?.[column];
+                            const valueType = typeof sampleValue;
+                            const isNumeric = !isNaN(Number(sampleValue)) && sampleValue !== null && sampleValue !== '';
+                            
+                            return (
+                              <div key={index} className="flex justify-between text-xs">
+                                <span className="font-mono">{column}</span>
+                                <span className="text-gray-500">
+                                  {isNumeric ? 'Numeric' : valueType === 'string' ? 'Text' : 'Mixed'}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Quick stats for numeric columns */}
+                    {(() => {
+                      const numericColumns = result.columns?.filter(col => {
+                        const values = (result.data || []).map(row => row[col]).filter(v => v !== null && v !== '');
+                        return values.length > 0 && values.every(v => !isNaN(Number(v)));
+                      }) || [];
+                      
+                      return numericColumns.length > 0 && (
+                        <div className="bg-white p-4 rounded-lg border">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                            <span className="text-sm font-medium">Numeric Summary</span>
+                          </div>
+                          {numericColumns.slice(0, 3).map(col => {
+                            const values = (result.data || []).map(row => Number(row[col])).filter(v => !isNaN(v));
+                            const sum = values.reduce((a, b) => a + b, 0);
+                            const avg = sum / values.length;
+                            const max = Math.max(...values);
+                            const min = Math.min(...values);
+                            
+                            return (
+                              <div key={col} className="mb-2">
+                                <div className="text-xs font-mono mb-1">{col}</div>
+                                <div className="grid grid-cols-4 gap-2 text-xs text-gray-600">
+                                  <span>Avg: {avg.toFixed(1)}</span>
+                                  <span>Max: {max.toLocaleString()}</span>
+                                  <span>Min: {min.toLocaleString()}</span>
+                                  <span>Sum: {sum.toLocaleString()}</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Sparkle className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Data to Analyze</h3>
+                  <p className="text-gray-500">Run a query first to see AI insights</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

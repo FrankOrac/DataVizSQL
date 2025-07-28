@@ -25,7 +25,7 @@ export function ChartBuilder({ data, queryId }: ChartBuilderProps) {
   const [height, setHeight] = useState(400);
 
   // Get available columns from data
-  const columns = data.length > 0 ? Object.keys(data[0]) : [];
+  const columns = Array.isArray(data) && data.length > 0 ? Object.keys(data[0]) : [];
 
   const createVisualizationMutation = useMutation({
     mutationFn: async (vizData: InsertVisualization) => {

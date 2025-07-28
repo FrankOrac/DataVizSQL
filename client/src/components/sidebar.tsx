@@ -79,10 +79,13 @@ export function Sidebar({ onNewQuery, onLoadQuery }: SidebarProps) {
           variant="ghost" 
           size="sm" 
           className="mt-2 h-auto p-0 text-xs text-primary hover:text-primary/80"
-          onClick={() => alert("Database connection management coming soon. Currently using PostgreSQL database with persistent storage.")}
+          onClick={() => {
+            const tableNames = "• sales_data (region, customer_name, product_name, sales_amount, date_created)\n• products (name, category, price)\n• customers (name, email, region, signup_date)";
+            alert(`PostgreSQL Database Connected\n\nAvailable Tables:\n${tableNames}\n\nConnection: ${dbConnection?.name || "PostgreSQL Database"}\nStatus: Active and Ready`);
+          }}
         >
           <ArrowLeftRight className="h-3 w-3 mr-1" />
-          Change Database
+          Database Info
         </Button>
       </div>
 
@@ -103,7 +106,27 @@ export function Sidebar({ onNewQuery, onLoadQuery }: SidebarProps) {
             variant="ghost" 
             size="sm" 
             className="w-full justify-start h-auto p-3"
-            onClick={() => alert("Sample datasets include: sales_data, products, customers tables with demo data")}
+            onClick={() => {
+              const datasets = `Available Sample Datasets:
+
+📊 sales_data (12 records)
+- Columns: region, customer_name, product_name, sales_amount, date_created
+- Sample: Q4 2024 sales across North America, Europe, Asia Pacific, Latin America
+
+🛍️ products (5 records)
+- Columns: name, category, price
+- Sample: Widget A/B/C, Pro Widget, Widget Suite
+
+👥 customers (5 records)
+- Columns: name, email, region, signup_date
+- Sample: Global customer base across all regions
+
+Try queries like:
+• "Show me total sales by region"
+• "Which products are most expensive?"
+• "List customers by signup date"`;
+              alert(datasets);
+            }}
           >
             <Database className="h-4 w-4 mr-2 text-gray-400" />
             Sample Datasets
@@ -112,7 +135,20 @@ export function Sidebar({ onNewQuery, onLoadQuery }: SidebarProps) {
             variant="ghost" 
             size="sm" 
             className="w-full justify-start h-auto p-3"
-            onClick={() => alert("Export functionality is available after running a query - use the Export buttons in the results table")}
+            onClick={() => {
+              const exportInfo = `Export Your Data:
+
+1️⃣ Run any SQL query first
+2️⃣ Click the Export buttons in results:
+   • CSV - Spreadsheet format
+   • JSON - API/programming format
+   
+3️⃣ Use the Visualize button to create charts
+4️⃣ Save visualizations for sharing
+
+Export formats preserve all column types and formatting.`;
+              alert(exportInfo);
+            }}
           >
             <Download className="h-4 w-4 mr-2 text-gray-400" />
             Export Data
