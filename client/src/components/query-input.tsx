@@ -201,6 +201,12 @@ export function QueryInput({
               size="sm"
               className="h-auto p-1 text-xs"
               disabled={!sqlQuery}
+              onClick={() => {
+                toast({
+                  title: "SQL Editor",
+                  description: "You can now edit the SQL query directly in the text area below",
+                });
+              }}
             >
               <Edit className="h-3 w-3 mr-1" />
               Edit
@@ -208,9 +214,12 @@ export function QueryInput({
           </div>
         </div>
         <div className="bg-gray-900 rounded-lg p-4 font-mono text-sm">
-          <pre className="text-gray-300 whitespace-pre-wrap">
-            {sqlQuery || "-- SQL query will appear here after generation"}
-          </pre>
+          <Textarea
+            value={sqlQuery || "-- SQL query will appear here after generation"}
+            onChange={(e) => onSqlQueryChange(e.target.value)}
+            className="min-h-[120px] bg-transparent border-none text-gray-300 font-mono text-sm resize-none focus:ring-0 focus:outline-none p-0"
+            placeholder="-- SQL query will appear here after generation"
+          />
         </div>
       </div>
 

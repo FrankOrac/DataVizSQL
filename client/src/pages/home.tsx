@@ -7,11 +7,12 @@ import { DataTable } from "@/components/data-table";
 import { ChartBuilder } from "@/components/chart-builder";
 import { LoadingOverlay } from "@/components/loading-overlay";
 import { ErrorModal } from "@/components/error-modal";
+import { DemoQueries } from "@/components/demo-queries";
 import { Query, QueryExecutionResult } from "@shared/schema";
 import { Share, Save } from "lucide-react";
 
 export default function Home() {
-  const [naturalLanguage, setNaturalLanguage] = useState("Show me sales performance by region for Q4 2024");
+  const [naturalLanguage, setNaturalLanguage] = useState("");
   const [sqlQuery, setSqlQuery] = useState("");
   const [queryResult, setQueryResult] = useState<QueryExecutionResult | null>(null);
   const [isExecuting, setIsExecuting] = useState(false);
@@ -59,13 +60,33 @@ export default function Home() {
   };
 
   const handleShareQuery = () => {
-    // TODO: Implement sharing functionality
-    console.log("Share query");
+    if (!currentQueryId) {
+      alert("Please execute a query first to share it");
+      return;
+    }
+    const shareUrl = `${window.location.origin}/share/${currentQueryId}`;
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      alert("Share link copied to clipboard!");
+    });
   };
 
-  const handleSaveQuery = () => {
-    // TODO: Implement save functionality
-    console.log("Save query");
+  const handleSaveQuery = async () => {
+    if (!currentQueryId) {
+      alert("Please execute a query first to save it");
+      return;
+    }
+    try {
+      const response = await fetch(`/api/queries/${currentQueryId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isSaved: true, title: naturalLanguage.slice(0, 50) })
+      });
+      if (response.ok) {
+        alert("Query saved successfully!");
+      }
+    } catch (error) {
+      alert("Failed to save query");
+    }
   };
 
   return (
@@ -93,6 +114,12 @@ export default function Home() {
               </Button>
             </div>
           </div>
+        </div>
+
+        <div className="bg-gray-50 p-6">
+          {!naturalLanguage && !sqlQuery && (
+            <DemoQueries onSelectQuery={setNaturalLanguage} />
+          )}
         </div>
 
         <QueryInput

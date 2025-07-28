@@ -2,7 +2,7 @@ import OpenAI from "openai";
 
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 const openai = new OpenAI({ 
-  apiKey: process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY_ENV_VAR || "default_key"
+  apiKey: process.env.OPENAI_API_KEY
 });
 
 export interface NLToSQLRequest {
@@ -18,8 +18,41 @@ export interface NLToSQLResponse {
   confidence: number;
 }
 
+// Common query patterns for fallback
+const COMMON_QUERIES = [
+  {
+    pattern: /sales.*by.*region/i,
+    sql: "SELECT region, SUM(sales_amount) as total_sales FROM sales_data GROUP BY region ORDER BY total_sales DESC",
+    explanation: "Shows total sales amount grouped by region in descending order"
+  },
+  {
+    pattern: /top.*customers?/i,
+    sql: "SELECT customer_name, SUM(sales_amount) as total_sales FROM sales_data GROUP BY customer_name ORDER BY total_sales DESC LIMIT 10",
+    explanation: "Shows top 10 customers by total sales amount"
+  },
+  {
+    pattern: /sales.*q4.*2024/i,
+    sql: "SELECT * FROM sales_data WHERE date_created >= '2024-10-01' AND date_created <= '2024-12-31' ORDER BY date_created DESC",
+    explanation: "Shows all sales data for Q4 2024 (October to December)"
+  },
+  {
+    pattern: /products?.*sales/i,
+    sql: "SELECT product_name, SUM(sales_amount) as total_sales, COUNT(*) as transaction_count FROM sales_data GROUP BY product_name ORDER BY total_sales DESC",
+    explanation: "Shows products with their total sales and transaction count"
+  },
+  {
+    pattern: /average.*sales/i,
+    sql: "SELECT region, AVG(sales_amount) as avg_sales FROM sales_data GROUP BY region ORDER BY avg_sales DESC",
+    explanation: "Shows average sales amount by region"
+  }
+];
+
 export async function translateNaturalLanguageToSQL(request: NLToSQLRequest): Promise<NLToSQLResponse> {
   try {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error("OpenAI API key is not configured. Please add your OPENAI_API_KEY to the environment.");
+    }
+
     const schema = request.schema || `
       CREATE TABLE sales_data (
         id INTEGER PRIMARY KEY,
@@ -75,7 +108,25 @@ export async function translateNaturalLanguageToSQL(request: NLToSQLRequest): Pr
       confidence: Math.max(0, Math.min(1, result.confidence || 0.8)),
     };
   } catch (error) {
-    throw new Error(`Failed to translate natural language to SQL: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    // If OpenAI fails (quota exceeded, network issues, etc.), use pattern matching fallback
+    console.log("OpenAI failed, using fallback pattern matching:", error);
+    
+    for (const query of COMMON_QUERIES) {
+      if (query.pattern.test(request.naturalLanguage)) {
+        return {
+          sqlQuery: query.sql,
+          explanation: `${query.explanation} (using smart pattern matching)`,
+          confidence: 0.7
+        };
+      }
+    }
+    
+    // Default fallback query
+    return {
+      sqlQuery: "SELECT * FROM sales_data LIMIT 10",
+      explanation: "Showing sample data (please try a more specific query like 'sales by region' or 'top customers')",
+      confidence: 0.5
+    };
   }
 }
 

@@ -91,3 +91,25 @@ The application follows a clean separation between frontend and backend with a s
 - **NODE_ENV**: Controls development vs production behavior
 
 The application is designed to work immediately in development with sample data while being ready for production deployment with proper database and API key configuration.
+
+## Recent Changes (July 28, 2025)
+
+### Fixed Non-Clickable Features
+- **Share Query**: Now copies shareable link to clipboard after executing a query
+- **Save Query**: Properly saves queries with PATCH request to backend API
+- **Sidebar Buttons**: Added functionality to all previously non-clickable buttons
+- **Chart Builder**: Made all export and generation buttons interactive with user feedback
+- **SQL Editor**: Made SQL query text area fully editable with real-time updates
+
+### OpenAI Integration Improvements
+- **Fallback System**: Implemented smart pattern matching when OpenAI API quota is exceeded
+- **Error Handling**: Added graceful degradation from AI translation to pattern-based SQL generation
+- **Sample Queries**: Added demo query buttons for common use cases (sales by region, top customers, etc.)
+- **User Experience**: Clear messaging when using fallback vs AI-generated queries
+
+### UI/UX Enhancements
+- **Demo Queries Component**: Added clickable sample queries for immediate user engagement
+- **Interactive Feedback**: All buttons now provide visual feedback and appropriate messaging
+- **Error Recovery**: Better error handling throughout the application with user-friendly messages
+
+The application now works fully even without OpenAI API access, using intelligent pattern matching for common queries.

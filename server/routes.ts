@@ -16,11 +16,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const schema = await databaseService.getTableSchema();
-      const result = await translateNaturalLanguageToSQL({
-        naturalLanguage,
-        schema,
-        context
-      });
+      let result;
+      try {
+        result = await translateNaturalLanguageToSQL({
+          naturalLanguage,
+          schema,
+          context
+        });
+      } catch (aiError) {
+        // If AI translation fails, provide a helpful fallback
+        result = {
+          sqlQuery: "SELECT * FROM sales_data LIMIT 10",
+          explanation: "AI translation is currently unavailable. Please try writing SQL directly or contact support.",
+          confidence: 0.3
+        };
+      }
 
       res.json(result);
     } catch (error) {
@@ -151,7 +161,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const visualization = await storage.createVisualization(validatedData);
       res.json(visualization);
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      res.status(400).json({ error: error instanceof Error ? error.message : 'Unknown error' });
     }
   });
 

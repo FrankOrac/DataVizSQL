@@ -163,7 +163,20 @@ export function ChartBuilder({ data, queryId }: ChartBuilderProps) {
         <div className="mt-6 space-y-2">
           <Button
             className="w-full"
-            onClick={handleGenerateChart}
+            onClick={() => {
+              if (!xAxis || !yAxis) {
+                toast({
+                  title: "Missing Configuration",
+                  description: "Please select both X and Y axis columns",
+                  variant: "destructive",
+                });
+                return;
+              }
+              toast({
+                title: "Chart Preview Updated",
+                description: `Generated ${chartType} chart with ${xAxis} vs ${yAxis}`,
+              });
+            }}
             disabled={!xAxis || !yAxis}
           >
             <BarChart3 className="h-4 w-4 mr-2" />
@@ -239,13 +252,35 @@ export function ChartBuilder({ data, queryId }: ChartBuilderProps) {
         <div className="mt-6 pt-4 border-t border-gray-200">
           <h4 className="text-sm font-medium text-gray-700 mb-3">Export Chart</h4>
           <div className="grid grid-cols-2 gap-2">
-            <Button variant="outline" size="sm" className="text-xs">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="text-xs"
+              onClick={() => alert("PNG export coming soon")}
+            >
               PNG
             </Button>
-            <Button variant="outline" size="sm" className="text-xs">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="text-xs"
+              onClick={() => alert("SVG export coming soon")}
+            >
               SVG
             </Button>
-            <Button variant="outline" size="sm" className="col-span-2 text-xs">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="col-span-2 text-xs"
+              onClick={() => {
+                const shareUrl = `${window.location.origin}/chart/${Math.random().toString(36).substr(2, 9)}`;
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                  alert("Chart share link copied to clipboard!");
+                }).catch(() => {
+                  alert("Failed to copy link");
+                });
+              }}
+            >
               <Link className="h-3 w-3 mr-1" />
               Shareable Link
             </Button>

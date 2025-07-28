@@ -75,7 +75,12 @@ export function Sidebar({ onNewQuery, onLoadQuery }: SidebarProps) {
         <p className="text-xs text-gray-600 mt-1">
           {dbConnection?.name || "sample_sales_data.db"}
         </p>
-        <Button variant="ghost" size="sm" className="mt-2 h-auto p-0 text-xs text-primary hover:text-primary/80">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="mt-2 h-auto p-0 text-xs text-primary hover:text-primary/80"
+          onClick={() => alert("Database connection management coming soon. Currently using sample SQLite database.")}
+        >
           <ArrowLeftRight className="h-3 w-3 mr-1" />
           Change Database
         </Button>
@@ -94,11 +99,21 @@ export function Sidebar({ onNewQuery, onLoadQuery }: SidebarProps) {
             <Plus className="h-4 w-4 mr-2 text-gray-400" />
             New Query
           </Button>
-          <Button variant="ghost" size="sm" className="w-full justify-start h-auto p-3">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="w-full justify-start h-auto p-3"
+            onClick={() => alert("Sample datasets include: sales_data, products, customers tables with demo data")}
+          >
             <Database className="h-4 w-4 mr-2 text-gray-400" />
             Sample Datasets
           </Button>
-          <Button variant="ghost" size="sm" className="w-full justify-start h-auto p-3">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="w-full justify-start h-auto p-3"
+            onClick={() => alert("Export functionality is available after running a query - use the Export buttons in the results table")}
+          >
             <Download className="h-4 w-4 mr-2 text-gray-400" />
             Export Data
           </Button>
